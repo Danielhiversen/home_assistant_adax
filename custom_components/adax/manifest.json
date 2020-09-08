@@ -4,5 +4,6 @@
   "documentation": "https://github.com/Danielhiversen/home_assistant_adax",
   "requirements": [],
   "codeowners": ["@danielhiversen"],
-  "config_flow": false
+  "config_flow": false,
+  "issue_tracker": "https://github.com/Danielhiversen/home_assistant_adax/issues"
 }
