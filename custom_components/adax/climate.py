@@ -248,14 +248,12 @@ class Adax:
         except aiohttp.ClientError as err:
             self._access_token = None
             if retry > 0:
-                self._access_token = None
                 return await self._request(url, json_data, retry=retry - 1)
             _LOGGER.error("Error connecting to Adax: %s ", err, exc_info=True)
             raise
         except asyncio.TimeoutError:
             self._access_token = None
             if retry > 0:
-                self._access_token = None
                 return await self._request(url, json_data, retry=retry - 1)
             _LOGGER.error("Timed out when connecting to Adax")
             raise
