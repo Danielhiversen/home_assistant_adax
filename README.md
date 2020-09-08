@@ -1,10 +1,9 @@
 # Adax heaters
 
-
-Custom component for using Adax in Home Assistant
+Custom component for using [Adax](https://adax.no/en/) heaters in Home Assistant.
 
 ## Install
-Copy the files to the custom_components folder in Home Assistant config.
+Use [hacs](https://hacs.xyz/) or copy the files to the custom_components folder in Home Assistant config.
 
 In configuration.yaml:
 
