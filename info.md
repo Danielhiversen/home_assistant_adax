@@ -1,6 +1,6 @@
 [Buy me a coffee :)](http://paypal.me/dahoiv)
 
-This is a plugin for Adax heaters.
+Async integration for Adax heaters
 
 {%- if selected_tag == "master" %}
 ## This is a development version!
