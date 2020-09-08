@@ -238,17 +238,22 @@ class Adax:
                     response = await self.websession.get(url, headers=headers)
             if response.status != 200:
                 self._access_token = None
+                if retry > 0:
+                    return await self._request(url, json_data, retry=retry - 1)
                 _LOGGER.error(
-                    "Error connecting to Adax, resp code: %s", response.status
+                    "Error connecting to Adax, response: %s %s", response.status, response.reason
                 )
+
                 return None
         except aiohttp.ClientError as err:
+            self._access_token = None
             if retry > 0:
                 self._access_token = None
                 return await self._request(url, json_data, retry=retry - 1)
             _LOGGER.error("Error connecting to Adax: %s ", err, exc_info=True)
             raise
         except asyncio.TimeoutError:
+            self._access_token = None
             if retry > 0:
                 self._access_token = None
                 return await self._request(url, json_data, retry=retry - 1)
