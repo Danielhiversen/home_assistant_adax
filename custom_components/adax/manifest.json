@@ -1,0 +1,8 @@
+{
+  "domain": "adax",
+  "name": "Adax",
+  "documentation": "https://github.com/Danielhiversen/home_assistant_adax",
+  "requirements": ["requests"],
+  "codeowners": ["@danielhiversen"],
+  "config_flow": false
+}

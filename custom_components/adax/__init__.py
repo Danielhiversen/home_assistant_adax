@@ -1,0 +1,1 @@
+"""The Adax heater integration."""
