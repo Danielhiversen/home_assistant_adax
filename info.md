@@ -1,6 +1,7 @@
+Async integration for Adax heaters
+
 [Buy me a coffee :)](http://paypal.me/dahoiv)
 
-Async integration for Adax heaters
 
 {%- if selected_tag == "master" %}
 ## This is a development version!
