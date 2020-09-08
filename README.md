@@ -1,4 +1,4 @@
-# Adax
+# Adax heaters
 
 
 Custom component for using Adax in Home Assistant
