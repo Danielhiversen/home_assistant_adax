@@ -3,5 +3,5 @@
     "domains": [
         "climate"
     ],
-    "iot_class": "Cloud Polling",
+    "iot_class": "Cloud Polling"
 }
