@@ -210,7 +210,7 @@ class Adax:
             room["targetTemperature"] = room.get("targetTemperature", 0) / 100.0
             room["temperature"] = room.get("temperature", 0) / 100.0
 
-    async def _request(self, url, json_data=None, retry=0):
+    async def _request(self, url, json_data=None, retry=3):
         if self._access_token is None:
             response = await self.websession.post(
                 f"{API_URL}/auth/token",
