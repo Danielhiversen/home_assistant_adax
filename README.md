@@ -2,6 +2,9 @@
 
 Custom component for using [Adax](https://adax.no/en/) heaters in Home Assistant.
 
+[Support the developer](http://paypal.me/dahoiv)
+
+
 ## Install
 Use [hacs](https://hacs.xyz/) or copy the files to the custom_components folder in Home Assistant config.
 
@@ -15,5 +18,3 @@ climate:
 ```
 
 API details: https://adax.no/om-adax/api-development/
-
-[Buy me a coffee :)](http://paypal.me/dahoiv)
