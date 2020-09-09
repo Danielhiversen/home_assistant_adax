@@ -239,6 +239,7 @@ class Adax:
             if response.status != 200:
                 self._access_token = None
                 if retry > 0:
+                    await asyncio.sleep(1)
                     return await self._request(url, json_data, retry=retry - 1)
                 _LOGGER.error(
                     "Error connecting to Adax, response: %s %s", response.status, response.reason
