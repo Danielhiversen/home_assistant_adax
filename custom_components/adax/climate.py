@@ -78,6 +78,14 @@ class AdaxDevice(ClimateEntity):
         return HVAC_MODE_OFF
 
     @property
+    def icon(self):
+        """Return nice icon for heater"""
+        if self.hvac_mode == HVAC_MODE_HEAT:
+            return "mdi:radiator"
+        else:
+            return "mdi:radiator-off"
+
+    @property
     def hvac_modes(self):
         """Return the list of available hvac operation modes.
         Need to be a subset of HVAC_MODES.
