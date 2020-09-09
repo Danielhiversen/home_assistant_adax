@@ -1,4 +1,7 @@
 # Adax heaters
+![Validate with hassfest](https://github.com/Danielhiversen/home_assistant_adax/workflows/Validate%20with%20hassfest/badge.svg)
+[![GitHub Release][releases-shield]][releases]
+[![hacs_badge][hacs-shield]][hacs]
 
 Custom component for using [Adax](https://adax.no/en/) heaters in Home Assistant.
 
@@ -18,3 +21,10 @@ climate:
 ```
 
 API details: https://adax.no/om-adax/api-development/
+
+
+[releases]: https://github.com/Danielhiversen/home_assistant_adax/releases
+[releases-shield]: https://img.shields.io/github/release/Danielhiversen/home_assistant_adax.svg?style=popout
+[downloads-total-shield]: https://img.shields.io/github/downloads/Danielhiversen/home_assistant_adax/total
+[hacs-shield]: https://img.shields.io/badge/HACS-Default-orange.svg
+[hacs]: https://hacs.xyz/docs/default_repositories
