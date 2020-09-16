@@ -16,6 +16,7 @@ from homeassistant.components.climate.const import (
 )
 from homeassistant.const import (
     CONF_PASSWORD,
+    CONF_USERNAME,
     TEMP_CELSIUS,
     ATTR_TEMPERATURE,
     PRECISION_WHOLE,
@@ -26,14 +27,28 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {vol.Required("account_id"): cv.string, vol.Required(CONF_PASSWORD): cv.string}
+    {vol.Required(CONF_USERNAME): cv.string, vol.Required(CONF_PASSWORD): cv.string}
 )
 
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the Adax thermostat."""
-    client_id = config["account_id"]
+    client_id = config[CONF_USERNAME]
     client_secret = config[CONF_PASSWORD]
+
+    adax_data_handler = Adax(
+        client_id, client_secret, websession=async_get_clientsession(hass)
+    )
+
+    dev = []
+    for heater_data in await adax_data_handler.get_rooms():
+        dev.append(AdaxDevice(heater_data, adax_data_handler))
+    async_add_entities(dev)
+
+async def async_setup_entry(hass, entry, async_add_entities):
+    """Set up the Adax thermostat with config flow"""
+    client_id = entry.data[CONF_USERNAME]
+    client_secret = entry.data[CONF_PASSWORD]
 
     adax_data_handler = Adax(
         client_id, client_secret, websession=async_get_clientsession(hass)
@@ -166,9 +181,9 @@ API_URL = "https://api-1.adax.no/client-api"
 class Adax:
     """Adax data handler."""
 
-    def __init__(self, account_id, password, websession):
+    def __init__(self, username, password, websession):
         """Init adax data handler."""
-        self._account_id = account_id
+        self._username = username
         self._password = password
         self.websession = websession
         self._access_token = None
@@ -228,7 +243,7 @@ class Adax:
                 },
                 data={
                     "grant_type": "password",
-                    "username": self._account_id,
+                    "username": self._username,
                     "password": self._password,
                 },
             )
