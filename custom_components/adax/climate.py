@@ -70,9 +70,7 @@ class AdaxDevice(ClimateEntity):
 
     @property
     def hvac_mode(self):
-        """Return hvac operation ie. heat, cool mode.
-        Need to be one of HVAC_MODE_*.
-        """
+        """Return hvac operation ie. heat, cool mode."""
         if self._heater_data["heatingEnabled"]:
             return HVAC_MODE_HEAT
         return HVAC_MODE_OFF
@@ -87,9 +85,7 @@ class AdaxDevice(ClimateEntity):
 
     @property
     def hvac_modes(self):
-        """Return the list of available hvac operation modes.
-        Need to be a subset of HVAC_MODES.
-        """
+        """Return the list of available hvac operation modes."""
         return [HVAC_MODE_HEAT, HVAC_MODE_OFF]
 
     async def async_set_hvac_mode(self, hvac_mode):
