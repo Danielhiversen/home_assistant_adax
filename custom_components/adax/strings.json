@@ -4,12 +4,12 @@
       "already_configured": "[%key:common::config_flow::abort::already_configured_account%]"
     },
     "error": {
-      "connection_error": "[%key:common::config_flow::error::cannot_connect%]"
+      "connection_error": "[%key:common::config_flow::error::connection_error%]"
     },
     "step": {
       "user": {
         "data": {
-          "username": "[%key:common::config_flow::data::username%]",
+          "account_id": "[%key:common::config_flow::data::account_id%]",
           "password": "[%key:common::config_flow::data::password%]"
         }
       }

@@ -1,66 +1,83 @@
-"""Adds config flow for Mill integration."""
+"""Adds config flow for Adax integration."""
 import logging
 
 import voluptuous as vol
 import aiohttp
 
-from homeassistant import config_entries
+from homeassistant import config_entries, core, exceptions
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 API_URL = "https://api-1.adax.no/client-api"
+DOMAIN = "adax"
 
 _LOGGER = logging.getLogger(__name__)
 
 DATA_SCHEMA = vol.Schema(
     {
-    vol.Required(CONF_USERNAME): str,
+    vol.Required("account_id"): str,
     vol.Required(CONF_PASSWORD): str}
 )
 
+async def validate_input(hass: core.HomeAssistant, username, password):
+    """Validate the user input allows us to connect."""
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        if entry.data["account_id"] == username:
+            raise AlreadyConfigured
 
-class AdaxConfigFlow(config_entries.ConfigFlow, domain="adax"):
-    """Handle a config flow for Mill integration."""
+    websession = async_get_clientsession(hass)
+    response = await websession.post(
+                f"{API_URL}/auth/token",
+                headers={
+                    "Content-type": "application/x-www-form-urlencoded",
+                    "Accept": "application/json",
+                },
+                data={
+                    "grant_type": "password",
+                    "username": username,
+                    "password": password,
+                },
+            )
+
+    if response.status != 200:
+            _LOGGER.info("Adax: Failed to login to retrieve token: %d", response.status)
+            raise CannotConnect
+
+class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for Adax integration."""
 
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
-        if user_input is None:
-            return self.async_show_form(
-                step_id="user", data_schema=DATA_SCHEMA, errors={},
-            )
+        errors = {}
 
-        username = user_input[CONF_USERNAME].replace(" ", "")
-        password = user_input[CONF_PASSWORD].replace(" ", "")
+        if user_input is not None:
+            try:
+                username = user_input["account_id"].replace(" ", "")
+                password = user_input[CONF_PASSWORD].replace(" ", "")
+                await validate_input(self.hass, username, password)
+                unique_id = username
+                await self.async_set_unique_id(unique_id)
+                self._abort_if_unique_id_configured()
 
-        """
-        TEST LOGIN
-        """
-        data = {'username': username,
-            'password': password,
-            'grant_type': 'password'}
+                return self.async_create_entry(
+                    title=unique_id, data={"account_id": username, CONF_PASSWORD: password},
+                )
+                _LOGGER.info("Adax: Login succesful. Config entry created.")
 
-        ACCESS_TOKEN_URL = API_URL + '/auth/token'
+            except AlreadyConfigured:
+                return self.async_abort(reason="already_configured")
+            except CannotConnect:
+                errors["base"] = "connection_error"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(ACCESS_TOKEN_URL, data=data) as response:
-                errors = {}
-                if response.status != 200:
-                    _LOGGER.info("Adax: Failed to login to retrieve token: %d", response.status)
-                    errors["connection_error"] = "connection_error"
-                    return self.async_show_form(
-                        step_id="user", data_schema=DATA_SCHEMA, errors=errors,
-                    )
-
-        _LOGGER.info("Adax: Login succesful. Config entry created.")
-
-        unique_id = username
-
-        await self.async_set_unique_id(unique_id)
-        self._abort_if_unique_id_configured()
-
-        return self.async_create_entry(
-            title=unique_id, data={CONF_USERNAME: username, CONF_PASSWORD: password},
+        return self.async_show_form(
+            step_id="user", data_schema=DATA_SCHEMA, errors=errors,
         )
+
+class CannotConnect(exceptions.HomeAssistantError):
+    """Error to indicate we cannot connect."""
+
+class AlreadyConfigured(exceptions.HomeAssistantError):
+    """Error to indicate host is already configured."""
