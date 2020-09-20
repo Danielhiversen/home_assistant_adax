@@ -25,6 +25,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 _LOGGER = logging.getLogger(__name__)
 
+API_URL = "https://api-1.adax.no/client-api"
+
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {vol.Required("account_id"): cv.string, vol.Required(CONF_PASSWORD): cv.string}
 )
@@ -169,13 +171,6 @@ class AdaxDevice(ClimateEntity):
             if room["id"] == self._heater_data["id"]:
                 self._heater_data = room
                 return
-
-
-######
-
-
-API_URL = "https://api-1.adax.no/client-api"
-
 
 class Adax:
     """Adax data handler."""
