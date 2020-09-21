@@ -1,12 +1,4 @@
 """The Adax heater integration."""
-import logging
-
-_LOGGER = logging.getLogger(__name__)
-
-from homeassistant.const import (
-    CONF_PASSWORD,
-)
-
 
 async def async_setup(hass, config):
     """Set up the Adax platform."""
