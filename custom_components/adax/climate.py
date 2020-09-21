@@ -34,11 +34,11 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the Adax thermostat."""
-    client_id = config["account_id"]
-    client_secret = config[CONF_PASSWORD]
+    account_id = config["account_id"]
+    password = config[CONF_PASSWORD]
 
     adax_data_handler = Adax(
-        client_id, client_secret, websession=async_get_clientsession(hass)
+        account_id, password, websession=async_get_clientsession(hass)
     )
 
     dev = []
@@ -48,11 +48,11 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the Adax thermostat with config flow"""
-    client_id = entry.data["account_id"]
-    client_secret = entry.data[CONF_PASSWORD]
+    account_id = entry.data["account_id"]
+    password = entry.data[CONF_PASSWORD]
 
     adax_data_handler = Adax(
-        client_id, client_secret, websession=async_get_clientsession(hass)
+        account_id, password, websession=async_get_clientsession(hass)
     )
 
     dev = []
