@@ -2,7 +2,6 @@
 import logging
 
 import voluptuous as vol
-import aiohttp
 
 from homeassistant import config_entries, core, exceptions
 from homeassistant.const import CONF_PASSWORD
