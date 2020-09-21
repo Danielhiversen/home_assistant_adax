@@ -228,6 +228,9 @@ class Adax:
                     "password": self._password,
                 },
             )
+            if response.status != 200:
+                _LOGGER.error("Adax: Failed to login to retrieve token: %s %s", response.status, response.reason)
+                return None
             token_data = json.loads(await response.text())
             self._access_token = token_data.get("access_token")
         headers = {"Authorization": f"Bearer {self._access_token}"}
