@@ -5,7 +5,7 @@ import voluptuous as vol
 import aiohttp
 
 from homeassistant import config_entries, core, exceptions
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 API_URL = "https://api-1.adax.no/client-api"
@@ -40,8 +40,8 @@ async def validate_input(hass: core.HomeAssistant, username, password):
             )
 
     if response.status != 200:
-            _LOGGER.info("Adax: Failed to login to retrieve token: %d", response.status)
-            raise CannotConnect
+        _LOGGER.info("Adax: Failed to login to retrieve token: %d", response.status)
+        raise CannotConnect
 
 class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Adax integration."""
@@ -55,7 +55,7 @@ class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             try:
-                username = user_input["account_id"].replace(" ", "")
+                account_id = user_input["account_id"].replace(" ", "")
                 password = user_input[CONF_PASSWORD].replace(" ", "")
                 await validate_input(self.hass, username, password)
                 unique_id = username
@@ -63,7 +63,7 @@ class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured()
 
                 return self.async_create_entry(
-                    title=unique_id, data={"account_id": username, CONF_PASSWORD: password},
+                    title=unique_id, data={"account_id": account_id, CONF_PASSWORD: password},
                 )
                 _LOGGER.info("Adax: Login succesful. Config entry created.")
 

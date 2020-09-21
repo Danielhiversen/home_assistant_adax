@@ -3,10 +3,8 @@ Async integration for Adax heaters
 [Buy me a coffee :)](http://paypal.me/dahoiv)
 
 {% if version_installed.replace(".","") | int <= 22  %}
-## Change in platform
+## Configuration by integration page
 
-For versions above 0.2.2 the setting of account_id has been replaced with username.
-After installation of this update using configuration.yaml change your configuration to match below (replace account_id with username)
 Option to implement using integrations page has been introduced.
 {% endif %}
 

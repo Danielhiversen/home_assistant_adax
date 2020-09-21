@@ -9,7 +9,7 @@
     "step": {
       "user": {
         "data": {
-          "account_id": "[%key:common::config_flow::data::account_id%]",
+          "account_id": "Account ID",
           "password": "[%key:common::config_flow::data::password%]"
         }
       }
