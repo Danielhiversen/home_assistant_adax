@@ -1,4 +1,4 @@
-Async integration for Adax heaters
+Integration for Adax heaters
 
 [Buy me a coffee :)](http://paypal.me/dahoiv)
 
