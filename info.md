@@ -28,7 +28,7 @@ Please be careful and do NOT install this on production systems. Also make sure 
 
 1.
 Go to integration page in HA, press + and search for Adax
-Enter your account id as username
+Enter your account id
 Enter your remote secret as password
 
 2.
