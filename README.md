@@ -11,6 +11,14 @@ Custom component for using [Adax](https://adax.no/en/) heaters in Home Assistant
 ## Install
 Use [hacs](https://hacs.xyz/) or copy the files to the custom_components folder in Home Assistant config.
 
+## Configuration (2 options)
+
+1.
+Go to integration page in HA, press + and search for Adax
+Enter your account id as Account ID
+Enter your remote secret as Password
+
+2.
 In configuration.yaml:
 
 ```
@@ -19,6 +27,8 @@ climate:
     account_id: "112395"  # replace with your account ID (see Adax WiFi app, Account Section)
     password: "6imtpX63D5WoRyKh"  # replace with your remote user password (see Adax WiFi app, Account Section)
 ```
+
+## API
 
 API details: https://adax.no/om-adax/api-development/
 

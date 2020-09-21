@@ -25,6 +25,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 _LOGGER = logging.getLogger(__name__)
 
+API_URL = "https://api-1.adax.no/client-api"
+
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {vol.Required("account_id"): cv.string, vol.Required(CONF_PASSWORD): cv.string}
 )
@@ -34,6 +36,20 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     """Set up the Adax thermostat."""
     client_id = config["account_id"]
     client_secret = config[CONF_PASSWORD]
+
+    adax_data_handler = Adax(
+        client_id, client_secret, websession=async_get_clientsession(hass)
+    )
+
+    dev = []
+    for heater_data in await adax_data_handler.get_rooms():
+        dev.append(AdaxDevice(heater_data, adax_data_handler))
+    async_add_entities(dev)
+
+async def async_setup_entry(hass, entry, async_add_entities):
+    """Set up the Adax thermostat with config flow"""
+    client_id = entry.data["account_id"]
+    client_secret = entry.data[CONF_PASSWORD]
 
     adax_data_handler = Adax(
         client_id, client_secret, websession=async_get_clientsession(hass)
@@ -151,13 +167,6 @@ class AdaxDevice(ClimateEntity):
             if room["id"] == self._heater_data["id"]:
                 self._heater_data = room
                 return
-
-
-######
-
-
-API_URL = "https://api-1.adax.no/client-api"
-
 
 class Adax:
     """Adax data handler."""

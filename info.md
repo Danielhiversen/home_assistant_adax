@@ -2,6 +2,11 @@ Async integration for Adax heaters
 
 [Buy me a coffee :)](http://paypal.me/dahoiv)
 
+{% if version_installed.replace(".","") | int <= 22  %}
+## Configuration by integration page
+
+Option to implement using integrations page has been introduced.
+{% endif %}
 
 {%- if selected_tag == "master" %}
 ## This is a development version!
@@ -19,8 +24,14 @@ Please be careful and do NOT install this on production systems. Also make sure 
 - Change set temperature and turn on/off
 
 
+## Configuration (2 options)
 
-## Install
+1.
+Go to integration page in HA, press + and search for Adax
+Enter your account id
+Enter your remote secret as password
+
+2.
 In configuration.yaml:
 
 ```
