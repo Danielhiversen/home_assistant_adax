@@ -1,5 +1,6 @@
 """The Adax heater integration."""
 
+
 async def async_setup(hass, config):
     """Set up the Adax platform."""
     return True
