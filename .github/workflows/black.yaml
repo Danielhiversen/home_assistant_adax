@@ -29,11 +29,6 @@ jobs:
             git checkout `basename $GITHUB_REF`
             git commit -am "Automated changes"
             git push origin HEAD:`basename $GITHUB_REF`
-      - name: black_read
-        if: github.event.pull_request.head.repo.full_name == github.repository
-        uses: lgeiger/black-action@master
-        with:
-            args: . --check
       - name: Flake8 Code Linter
         uses: jonasrk/flake8-action@master
         with: 
