@@ -46,6 +46,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         dev.append(AdaxDevice(heater_data, adax_data_handler))
     async_add_entities(dev)
 
+
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the Adax thermostat with config flow"""
     account_id = entry.data["account_id"]
@@ -168,6 +169,7 @@ class AdaxDevice(ClimateEntity):
                 self._heater_data = room
                 return
 
+
 class Adax:
     """Adax data handler."""
 
@@ -238,7 +240,11 @@ class Adax:
                 },
             )
             if response.status != 200:
-                _LOGGER.error("Adax: Failed to login to retrieve token: %s %s", response.status, response.reason)
+                _LOGGER.error(
+                    "Adax: Failed to login to retrieve token: %s %s",
+                    response.status,
+                    response.reason,
+                )
                 return None
             token_data = json.loads(await response.text())
             self._access_token = token_data.get("access_token")
@@ -258,7 +264,9 @@ class Adax:
                     await asyncio.sleep(1)
                     return await self._request(url, json_data, retry=retry - 1)
                 _LOGGER.error(
-                    "Error connecting to Adax, response: %s %s", response.status, response.reason
+                    "Error connecting to Adax, response: %s %s",
+                    response.status,
+                    response.reason,
                 )
 
                 return None

@@ -14,10 +14,9 @@ DOMAIN = "adax"
 _LOGGER = logging.getLogger(__name__)
 
 DATA_SCHEMA = vol.Schema(
-    {
-    vol.Required("account_id"): str,
-    vol.Required(CONF_PASSWORD): str}
+    {vol.Required("account_id"): str, vol.Required(CONF_PASSWORD): str}
 )
+
 
 async def validate_input(hass: core.HomeAssistant, account_id, password):
     """Validate the user input allows us to connect."""
@@ -27,21 +26,22 @@ async def validate_input(hass: core.HomeAssistant, account_id, password):
 
     websession = async_get_clientsession(hass)
     response = await websession.post(
-                f"{API_URL}/auth/token",
-                headers={
-                    "Content-type": "application/x-www-form-urlencoded",
-                    "Accept": "application/json",
-                },
-                data={
-                    "grant_type": "password",
-                    "username": account_id,
-                    "password": password,
-                },
-            )
+        f"{API_URL}/auth/token",
+        headers={
+            "Content-type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+        },
+        data={
+            "grant_type": "password",
+            "username": account_id,
+            "password": password,
+        },
+    )
 
     if response.status != 200:
         _LOGGER.info("Adax: Failed to login to retrieve token: %d", response.status)
         raise CannotConnect
+
 
 class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Adax integration."""
@@ -63,7 +63,8 @@ class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured()
 
                 return self.async_create_entry(
-                    title=unique_id, data={"account_id": account_id, CONF_PASSWORD: password},
+                    title=unique_id,
+                    data={"account_id": account_id, CONF_PASSWORD: password},
                 )
                 _LOGGER.info("Adax: Login succesful. Config entry created.")
 
@@ -73,11 +74,15 @@ class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "connection_error"
 
         return self.async_show_form(
-            step_id="user", data_schema=DATA_SCHEMA, errors=errors,
+            step_id="user",
+            data_schema=DATA_SCHEMA,
+            errors=errors,
         )
+
 
 class CannotConnect(exceptions.HomeAssistantError):
     """Error to indicate we cannot connect."""
+
 
 class AlreadyConfigured(exceptions.HomeAssistantError):
     """Error to indicate host is already configured."""
