@@ -19,10 +19,10 @@ DATA_SCHEMA = vol.Schema(
     vol.Required(CONF_PASSWORD): str}
 )
 
-async def validate_input(hass: core.HomeAssistant, username, password):
+async def validate_input(hass: core.HomeAssistant, account_id, password):
     """Validate the user input allows us to connect."""
     for entry in hass.config_entries.async_entries(DOMAIN):
-        if entry.data["account_id"] == username:
+        if entry.data["account_id"] == account_id:
             raise AlreadyConfigured
 
     websession = async_get_clientsession(hass)
@@ -34,7 +34,7 @@ async def validate_input(hass: core.HomeAssistant, username, password):
                 },
                 data={
                     "grant_type": "password",
-                    "username": username,
+                    "username": account_id,
                     "password": password,
                 },
             )
@@ -57,8 +57,8 @@ class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 account_id = user_input["account_id"].replace(" ", "")
                 password = user_input[CONF_PASSWORD].replace(" ", "")
-                await validate_input(self.hass, username, password)
-                unique_id = username
+                await validate_input(self.hass, account_id, password)
+                unique_id = account_id
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
 
