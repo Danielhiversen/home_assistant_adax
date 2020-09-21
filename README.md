@@ -15,8 +15,8 @@ Use [hacs](https://hacs.xyz/) or copy the files to the custom_components folder 
 
 1.
 Go to integration page in HA, press + and search for Adax
-Enter your account id as username
-Enter your remote secret as password
+Enter your account id as Account ID
+Enter your remote secret as Password
 
 2.
 In configuration.yaml:
