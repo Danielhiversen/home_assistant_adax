@@ -9,10 +9,6 @@ import async_timeout
 import voluptuous as vol
 
 
-
-
-
-
 from homeassistant.components.climate import ClimateEntity, PLATFORM_SCHEMA
 from homeassistant.components.climate.const import (
     SUPPORT_TARGET_TEMPERATURE,
