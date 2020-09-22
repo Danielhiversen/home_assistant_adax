@@ -42,9 +42,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         account_id, password, websession=async_get_clientsession(hass)
     )
 
-    
-    
-    
     dev = []
     for heater_data in await adax_data_handler.get_rooms():
         dev.append(AdaxDevice(heater_data, adax_data_handler))
