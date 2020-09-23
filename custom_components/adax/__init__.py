@@ -8,7 +8,6 @@ async def async_setup(hass, config):
 
 async def async_setup_entry(hass, entry):
     """Set up the Adax heater."""
-
     hass.async_create_task(
         hass.config_entries.async_forward_entry_setup(entry, "climate")
     )

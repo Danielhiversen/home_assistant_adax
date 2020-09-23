@@ -6,8 +6,8 @@ import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from .adax import get_adax_token
 
-API_URL = "https://api-1.adax.no/client-api"
 DOMAIN = "adax"
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,22 +23,9 @@ async def validate_input(hass: core.HomeAssistant, account_id, password):
         if entry.data["account_id"] == account_id:
             raise AlreadyConfigured
 
-    websession = async_get_clientsession(hass)
-    response = await websession.post(
-        f"{API_URL}/auth/token",
-        headers={
-            "Content-type": "application/x-www-form-urlencoded",
-            "Accept": "application/json",
-        },
-        data={
-            "grant_type": "password",
-            "username": account_id,
-            "password": password,
-        },
-    )
-
-    if response.status != 200:
-        _LOGGER.info("Adax: Failed to login to retrieve token: %d", response.status)
+    token = await get_adax_token(async_get_clientsession(hass), account_id, password)
+    if token is None:
+        _LOGGER.info("Adax: Failed to login to retrieve token")
         raise CannotConnect
 
 
@@ -65,7 +52,6 @@ class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     title=unique_id,
                     data={"account_id": account_id, CONF_PASSWORD: password},
                 )
-                _LOGGER.info("Adax: Login succesful. Config entry created.")
 
             except AlreadyConfigured:
                 return self.async_abort(reason="already_configured")
