@@ -7,20 +7,19 @@ from homeassistant import config_entries, core, exceptions
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .adax import get_adax_token
-
-DOMAIN = "adax"
+from .const import ACCOUNT_ID, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 DATA_SCHEMA = vol.Schema(
-    {vol.Required("account_id"): str, vol.Required(CONF_PASSWORD): str}
+    {vol.Required(ACCOUNT_ID): str, vol.Required(CONF_PASSWORD): str}
 )
 
 
 async def validate_input(hass: core.HomeAssistant, account_id, password):
     """Validate the user input allows us to connect."""
     for entry in hass.config_entries.async_entries(DOMAIN):
-        if entry.data["account_id"] == account_id:
+        if entry.data[ACCOUNT_ID] == account_id:
             raise AlreadyConfigured
 
     token = await get_adax_token(async_get_clientsession(hass), account_id, password)
@@ -41,7 +40,7 @@ class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             try:
-                account_id = user_input["account_id"].replace(" ", "")
+                account_id = user_input[ACCOUNT_ID].replace(" ", "")
                 password = user_input[CONF_PASSWORD].replace(" ", "")
                 await validate_input(self.hass, account_id, password)
                 unique_id = account_id
@@ -50,7 +49,7 @@ class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 return self.async_create_entry(
                     title=unique_id,
-                    data={"account_id": account_id, CONF_PASSWORD: password},
+                    data={ACCOUNT_ID: account_id, CONF_PASSWORD: password},
                 )
 
             except AlreadyConfigured:
