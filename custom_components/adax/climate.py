@@ -19,34 +19,28 @@ from homeassistant.const import (
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .adax import Adax
+from .const import ACCOUNT_ID
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {vol.Required("account_id"): cv.string, vol.Required(CONF_PASSWORD): cv.string}
+    {vol.Required(ACCOUNT_ID): cv.string, vol.Required(CONF_PASSWORD): cv.string}
 )
 
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the Adax thermostat."""
-    account_id = config["account_id"]
-    password = config[CONF_PASSWORD]
-
-    adax_data_handler = Adax(
-        account_id, password, websession=async_get_clientsession(hass)
-    )
-
-    dev = []
-    for heater_data in await adax_data_handler.get_rooms():
-        dev.append(AdaxDevice(heater_data, adax_data_handler))
-    async_add_entities(dev)
+    await _setup(hass, config[ACCOUNT_ID], config[CONF_PASSWORD], async_add_entities)
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the Adax thermostat with config flow."""
-    account_id = entry.data["account_id"]
-    password = entry.data[CONF_PASSWORD]
+    await _setup(
+        hass, entry.data[ACCOUNT_ID], entry.data[CONF_PASSWORD], async_add_entities
+    )
 
+
+async def _setup(hass, account_id, password, async_add_entities):
     adax_data_handler = Adax(
         account_id, password, websession=async_get_clientsession(hass)
     )
