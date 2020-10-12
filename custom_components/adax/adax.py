@@ -126,10 +126,15 @@ async def get_adax_token(websession, account_id, password):
         },
     )
     if response.status != 200:
+        if "invalid_grant" in response.reason:
+            log_str = "https://github.com/Danielhiversen/home_assistant_adax/issues/18#issuecomment-707238234"
+        else:
+            log_str = ""
         _LOGGER.error(
-            "Adax: Failed to login to retrieve token: %s %s",
+            "Adax: Failed to login to retrieve token: %s %s %s",
             response.status,
             response.reason,
+            log_str,
         )
         return None
     token_data = json.loads(await response.text())
