@@ -24,7 +24,7 @@ from .const import ACCOUNT_ID
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {vol.Required(ACCOUNT_ID): cv.string, vol.Required(CONF_PASSWORD): cv.string}
+    {vol.Required(ACCOUNT_ID): cv.int, vol.Required(CONF_PASSWORD): cv.string}
 )
 
 

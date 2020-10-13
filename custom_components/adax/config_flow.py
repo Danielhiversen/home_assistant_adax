@@ -12,7 +12,7 @@ from .const import ACCOUNT_ID, DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 DATA_SCHEMA = vol.Schema(
-    {vol.Required(ACCOUNT_ID): str, vol.Required(CONF_PASSWORD): str}
+    {vol.Required(ACCOUNT_ID): int, vol.Required(CONF_PASSWORD): str}
 )
 
 
