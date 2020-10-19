@@ -40,7 +40,7 @@ class AdaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             try:
-                account_id = user_input[ACCOUNT_ID].replace(" ", "")
+                account_id = user_input[ACCOUNT_ID]
                 password = user_input[CONF_PASSWORD].replace(" ", "")
                 await validate_input(self.hass, account_id, password)
                 unique_id = account_id
