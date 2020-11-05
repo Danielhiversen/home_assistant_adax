@@ -25,6 +25,11 @@ class Adax:
         self._last_updated = datetime.datetime.utcnow() - datetime.timedelta(hours=2)
         self._timeout = 10
 
+        self._next_request = datetime.datetime.now()
+        self._set_event = asyncio.Event()
+        self._write_task = None
+        self._pending_writes = {"rooms": []}
+
     async def get_rooms(self):
         """Get adax rooms."""
         await self.update()
@@ -43,16 +48,48 @@ class Adax:
 
     async def set_room_target_temperature(self, room_id, temperature, heating_enabled):
         """Set target temperature of the room."""
-        json_data = {
-            "rooms": [
-                {
-                    "id": room_id,
-                    "heatingEnabled": heating_enabled,
-                    "targetTemperature": str(int(temperature * 100)),
-                }
-            ]
-        }
+        if self._write_task is not None:
+            self._write_task.cancel()
+        self._pending_writes["rooms"] = [
+            room
+            for room in self._pending_writes["rooms"]
+            if not room.get("id") == room_id
+        ]
+
+        self._pending_writes["rooms"].append(
+            {
+                "id": room_id,
+                "heatingEnabled": heating_enabled,
+                "targetTemperature": str(int(temperature * 100)),
+            }
+        )
+
+        self._write_task = asyncio.ensure_future(
+            self._write_set_room_target_temperature(self._pending_writes.copy())
+        )
+        await self._set_event.wait()
+
+    async def _write_set_room_target_temperature(self, json_data):
+        now = datetime.datetime.now()
+        sleep = max(
+            0.5,
+            (self._next_request - now).total_seconds(),
+            (self._last_updated + datetime.timedelta(seconds=15) - now).total_seconds(),
+        )
+        print(
+            sleep,
+            json_data,
+            (self._next_request - now).total_seconds(),
+            (self._last_updated + datetime.timedelta(seconds=15) - now).total_seconds(),
+        )
+        await asyncio.sleep(sleep)
+        print("aaa")
         await self._request(API_URL + "/rest/v1/control/", json_data=json_data)
+        self._next_request = now + datetime.timedelta(seconds=15)
+        self._last_updated = now
+        self._pending_writes = {"rooms": []}
+        self._set_event.set()
+        self._set_event.clear()
 
     async def fetch_rooms_info(self):
         """Get rooms info."""
@@ -68,6 +105,7 @@ class Adax:
             room["temperature"] = room.get("temperature", 0) / 100.0
 
     async def _request(self, url, json_data=None, retry=3):
+        print(url, retry)
         if self._access_token is None:
             self._access_token = await get_adax_token(
                 self.websession, self._account_id, self._password
@@ -98,7 +136,7 @@ class Adax:
                 return None
         except aiohttp.ClientError as err:
             self._access_token = None
-            if retry > 0 and '429' not in err:
+            if retry > 0 and "429" not in err:
                 return await self._request(url, json_data, retry=retry - 1)
             _LOGGER.error("Error connecting to Adax: %s ", err, exc_info=True)
             raise
