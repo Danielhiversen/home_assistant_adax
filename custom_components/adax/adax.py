@@ -86,7 +86,7 @@ class Adax:
                     response = await self.websession.get(url, headers=headers)
             if response.status != 200:
                 self._access_token = None
-                if retry > 0:
+                if retry > 0 and response.status != 429:
                     await asyncio.sleep(1)
                     return await self._request(url, json_data, retry=retry - 1)
                 _LOGGER.error(
