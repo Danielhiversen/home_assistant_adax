@@ -2,22 +2,21 @@
 import logging
 
 import voluptuous as vol
-
-
-from homeassistant.components.climate import ClimateEntity, PLATFORM_SCHEMA
+from homeassistant.components.climate import PLATFORM_SCHEMA, ClimateEntity
 from homeassistant.components.climate.const import (
-    SUPPORT_TARGET_TEMPERATURE,
-    HVAC_MODE_OFF,
     HVAC_MODE_HEAT,
+    HVAC_MODE_OFF,
+    SUPPORT_TARGET_TEMPERATURE,
 )
 from homeassistant.const import (
-    CONF_PASSWORD,
-    TEMP_CELSIUS,
     ATTR_TEMPERATURE,
+    CONF_PASSWORD,
     PRECISION_WHOLE,
+    TEMP_CELSIUS,
 )
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
 from .adax import Adax
 from .const import ACCOUNT_ID
 
@@ -46,8 +45,8 @@ async def _setup(hass, account_id, password, async_add_entities):
     )
 
     dev = []
-    for heater_data in await adax_data_handler.get_rooms():
-        dev.append(AdaxDevice(heater_data, adax_data_handler))
+    for room in await adax_data_handler.get_rooms():
+        dev.append(AdaxDevice(room, adax_data_handler))
     async_add_entities(dev)
 
 
@@ -108,7 +107,7 @@ class AdaxDevice(ClimateEntity):
             )
         else:
             return
-        await self._adax_data_handler.update(force_update=True)
+        await self._adax_data_handler.update()
 
     @property
     def temperature_unit(self):
@@ -128,12 +127,12 @@ class AdaxDevice(ClimateEntity):
     @property
     def current_temperature(self):
         """Return the current temperature."""
-        return self._heater_data["temperature"]
+        return self._heater_data.get("temperature")
 
     @property
     def target_temperature(self):
         """Return the temperature we try to reach."""
-        return self._heater_data["targetTemperature"]
+        return self._heater_data.get("targetTemperature")
 
     @property
     def target_temperature_step(self):
@@ -148,7 +147,6 @@ class AdaxDevice(ClimateEntity):
         await self._adax_data_handler.set_room_target_temperature(
             self._heater_data["id"], temperature, True
         )
-        await self._adax_data_handler.update(force_update=True)
 
     async def async_update(self):
         """Get the latest data."""
