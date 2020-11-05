@@ -98,7 +98,7 @@ class Adax:
                 return None
         except aiohttp.ClientError as err:
             self._access_token = None
-            if retry > 0:
+            if retry > 0 and '429' not in err:
                 return await self._request(url, json_data, retry=retry - 1)
             _LOGGER.error("Error connecting to Adax: %s ", err, exc_info=True)
             raise
