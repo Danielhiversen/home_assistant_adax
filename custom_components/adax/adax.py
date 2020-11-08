@@ -156,22 +156,28 @@ class Adax:
 async def get_adax_token(websession, account_id, password, retry=3):
     """Get token for Adax."""
     try:
-        response = await websession.post(
-            f"{API_URL}/auth/token",
-            headers={
-                "Content-type": "application/x-www-form-urlencoded",
-                "Accept": "application/json",
-            },
-            data={
-                "grant_type": "password",
-                "username": account_id,
-                "password": password,
-            },
-        )
+        with async_timeout.timeout(7):
+            response = await websession.post(
+                f"{API_URL}/auth/token",
+                headers={
+                    "Content-type": "application/x-www-form-urlencoded",
+                    "Accept": "application/json",
+                },
+                data={
+                    "grant_type": "password",
+                    "username": account_id,
+                    "password": password,
+                },
+            )
     except ClientError as err:
         if retry > 0:
             return await get_adax_token(websession, account_id, password, retry=retry - 1)
         _LOGGER.error("Error getting token Adax: %s ", err, exc_info=True)
+        return None
+    except asyncio.TimeoutError:
+        if retry > 0:
+            return await get_adax_token(websession, account_id, password, retry=retry - 1)
+        _LOGGER.error("Timed out when connecting to Adax for token")
         return None
     if response.status != 200:
         if "invalid_grant" in response.reason:
