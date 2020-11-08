@@ -73,7 +73,7 @@ class Adax:
     async def _write_set_room_target_temperature(self, json_data):
         now = datetime.datetime.utcnow()
         delay = max(
-            2.0,
+            0.5,
             (
                 self._prev_request
                 + datetime.timedelta(seconds=RATE_LIMIT_SECONDS)
@@ -153,20 +153,26 @@ class Adax:
         return response
 
 
-async def get_adax_token(websession, account_id, password):
+async def get_adax_token(websession, account_id, password, retry=3):
     """Get token for Adax."""
-    response = await websession.post(
-        f"{API_URL}/auth/token",
-        headers={
-            "Content-type": "application/x-www-form-urlencoded",
-            "Accept": "application/json",
-        },
-        data={
-            "grant_type": "password",
-            "username": account_id,
-            "password": password,
-        },
-    )
+    try:
+        response = await websession.post(
+            f"{API_URL}/auth/token",
+            headers={
+                "Content-type": "application/x-www-form-urlencoded",
+                "Accept": "application/json",
+            },
+            data={
+                "grant_type": "password",
+                "username": account_id,
+                "password": password,
+            },
+        )
+    except ClientError as err:
+        if retry > 0:
+            return await get_adax_token(websession, account_id, password, retry=retry - 1)
+        _LOGGER.error("Error getting token Adax: %s ", err, exc_info=True)
+        return None
     if response.status != 200:
         if "invalid_grant" in response.reason:
             log_str = "https://github.com/Danielhiversen/home_assistant_adax/issues/18#issuecomment-707238234"
