@@ -171,12 +171,16 @@ async def get_adax_token(websession, account_id, password, retry=3):
             )
     except ClientError as err:
         if retry > 0:
-            return await get_adax_token(websession, account_id, password, retry=retry - 1)
+            return await get_adax_token(
+                websession, account_id, password, retry=retry - 1
+            )
         _LOGGER.error("Error getting token Adax: %s ", err, exc_info=True)
         return None
     except asyncio.TimeoutError:
         if retry > 0:
-            return await get_adax_token(websession, account_id, password, retry=retry - 1)
+            return await get_adax_token(
+                websession, account_id, password, retry=retry - 1
+            )
         _LOGGER.error("Timed out when connecting to Adax for token")
         return None
     if response.status != 200:
