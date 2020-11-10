@@ -10,14 +10,14 @@ from aiohttp import ClientError
 _LOGGER = logging.getLogger(__name__)
 
 API_URL = "https://api-1.adax.no/client-api"
-RATE_LIMIT_SECONDS = 30
+RATE_LIMIT_SECONDS = 5
 
 
 class Adax:
     """Adax data handler."""
 
     def __init__(self, account_id, password, websession):
-        """Init adax data handler."""
+        """Init Adax data handler."""
         self._account_id = account_id
         self._password = password
         self.websession = websession
@@ -31,20 +31,18 @@ class Adax:
         self._pending_writes = {"rooms": []}
 
     async def get_rooms(self):
-        """Get adax rooms."""
+        """Get Adax rooms."""
         await self.update()
         return self._rooms
 
     async def update(self):
         """Update data."""
-        now = datetime.datetime.utcnow()
         if (
-            now - self._prev_request < datetime.timedelta(seconds=RATE_LIMIT_SECONDS)
+            datetime.datetime.utcnow() - self._prev_request < datetime.timedelta(seconds=RATE_LIMIT_SECONDS)
             or self._write_task is not None
         ):
             _LOGGER.debug("Skip update")
             return
-        self._prev_request = now
         await self.fetch_rooms_info()
 
     async def set_room_target_temperature(self, room_id, temperature, heating_enabled):
@@ -73,7 +71,7 @@ class Adax:
     async def _write_set_room_target_temperature(self, json_data):
         now = datetime.datetime.utcnow()
         delay = max(
-            0.5,
+            0.1,
             (
                 self._prev_request
                 + datetime.timedelta(seconds=RATE_LIMIT_SECONDS)
@@ -82,15 +80,14 @@ class Adax:
         )
         _LOGGER.debug("Delaying request %.1fs", delay)
         await asyncio.sleep(delay)
-        self._prev_request = datetime.datetime.utcnow()
-        await self._request(API_URL + "/rest/v1/control/", json_data=json_data)
-        for room_i in self._rooms.copy():
-            for room_j in json_data.get("rooms"):
-                if room_i["id"] == room_j["id"]:
-                    room_i["targetTemperature"] = (
-                        float(room_j.get("targetTemperature", 0)) / 100.0
-                    )
-                    break
+        if await self._request(API_URL + "/rest/v1/control/", json_data=json_data) is not None:
+            for room_i in self._rooms.copy():
+                for room_j in json_data.get("rooms"):
+                    if room_i["id"] == room_j["id"]:
+                        room_i["targetTemperature"] = (
+                            float(room_j.get("targetTemperature", 0)) / 100.0
+                        )
+                        break
 
         self._pending_writes = {"rooms": []}
         self._set_event.set()
@@ -111,6 +108,7 @@ class Adax:
             room["temperature"] = room.get("temperature", 0) / 100.0
 
     async def _request(self, url, json_data=None, retry=3):
+        self._prev_request = datetime.datetime.utcnow()
         _LOGGER.debug("Request %s %s, %s", url, retry, json_data)
         if self._access_token is None:
             self._access_token = await get_adax_token(
@@ -130,7 +128,10 @@ class Adax:
                     response = await self.websession.get(url, headers=headers)
             if response.status != 200:
                 self._access_token = None
-                if retry > 0 and response.status != 429:
+                if retry > 0:
+                    if response.status == 429:
+                        _LOGGER.warning("Too many requests, will retry")
+                        await asyncio.sleep(RATE_LIMIT_SECONDS * max(1, (4 - retry)))
                     return await self._request(url, json_data, retry=retry - 1)
                 _LOGGER.error(
                     "Error connecting to Adax, response: %s %s",
@@ -150,13 +151,14 @@ class Adax:
                 return await self._request(url, json_data, retry=retry - 1)
             _LOGGER.error("Timed out when connecting to Adax")
             raise
+        self._prev_request = datetime.datetime.utcnow()
         return response
 
 
-async def get_adax_token(websession, account_id, password, retry=3):
+async def get_adax_token(websession, account_id, password, retry=3, timeout=10):
     """Get token for Adax."""
     try:
-        with async_timeout.timeout(7):
+        with async_timeout.timeout(timeout):
             response = await websession.post(
                 f"{API_URL}/auth/token",
                 headers={
@@ -171,16 +173,12 @@ async def get_adax_token(websession, account_id, password, retry=3):
             )
     except ClientError as err:
         if retry > 0:
-            return await get_adax_token(
-                websession, account_id, password, retry=retry - 1
-            )
+            return await get_adax_token(websession, account_id, password, retry=retry - 1)
         _LOGGER.error("Error getting token Adax: %s ", err, exc_info=True)
         return None
     except asyncio.TimeoutError:
         if retry > 0:
-            return await get_adax_token(
-                websession, account_id, password, retry=retry - 1
-            )
+            return await get_adax_token(websession, account_id, password, retry=retry - 1)
         _LOGGER.error("Timed out when connecting to Adax for token")
         return None
     if response.status != 200:
