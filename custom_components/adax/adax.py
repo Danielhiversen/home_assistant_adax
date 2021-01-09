@@ -87,6 +87,8 @@ class Adax:
                         room_i["targetTemperature"] = (
                             float(room_j.get("targetTemperature", 0)) / 100.0
                         )
+                        if room_j.get("heatingEnabled") is not None:
+                            room_i["heatingEnabled"] = room_j["heatingEnabled"]
                         break
 
         self._pending_writes = {"rooms": []}
