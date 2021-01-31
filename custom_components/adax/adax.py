@@ -38,7 +38,8 @@ class Adax:
     async def update(self):
         """Update data."""
         if (
-            datetime.datetime.utcnow() - self._prev_request < datetime.timedelta(seconds=RATE_LIMIT_SECONDS)
+            datetime.datetime.utcnow() - self._prev_request
+            < datetime.timedelta(seconds=RATE_LIMIT_SECONDS)
             or self._write_task is not None
         ):
             _LOGGER.debug("Skip update")
@@ -80,13 +81,18 @@ class Adax:
         )
         _LOGGER.debug("Delaying request %.1fs", delay)
         await asyncio.sleep(delay)
-        if await self._request(API_URL + "/rest/v1/control/", json_data=json_data) is not None:
+        if (
+            await self._request(API_URL + "/rest/v1/control/", json_data=json_data)
+            is not None
+        ):
             for room_i in self._rooms.copy():
                 for room_j in json_data.get("rooms"):
                     if room_i["id"] == room_j["id"]:
                         room_i["targetTemperature"] = (
                             float(room_j.get("targetTemperature", 0)) / 100.0
                         )
+                        if room_j.get("heatingEnabled") is not None:
+                            room_i["heatingEnabled"] = room_j["heatingEnabled"]
                         break
 
         self._pending_writes = {"rooms": []}
@@ -173,12 +179,16 @@ async def get_adax_token(websession, account_id, password, retry=3, timeout=10):
             )
     except ClientError as err:
         if retry > 0:
-            return await get_adax_token(websession, account_id, password, retry=retry - 1)
+            return await get_adax_token(
+                websession, account_id, password, retry=retry - 1
+            )
         _LOGGER.error("Error getting token Adax: %s ", err, exc_info=True)
         return None
     except asyncio.TimeoutError:
         if retry > 0:
-            return await get_adax_token(websession, account_id, password, retry=retry - 1)
+            return await get_adax_token(
+                websession, account_id, password, retry=retry - 1
+            )
         _LOGGER.error("Timed out when connecting to Adax for token")
         return None
     if response.status != 200:
