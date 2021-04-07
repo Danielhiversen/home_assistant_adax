@@ -1,6 +1,7 @@
 """Support for Adax wifi-enabled home heaters."""
 import logging
 
+from adax import Adax
 import voluptuous as vol
 from homeassistant.components.climate import PLATFORM_SCHEMA, ClimateEntity
 from homeassistant.components.climate.const import (
@@ -17,7 +18,6 @@ from homeassistant.const import (
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .adax import Adax
 from .const import ACCOUNT_ID
 
 _LOGGER = logging.getLogger(__name__)
