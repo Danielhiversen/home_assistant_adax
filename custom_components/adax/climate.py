@@ -4,17 +4,14 @@ import logging
 from adax import Adax
 import voluptuous as vol
 from homeassistant.components.climate import PLATFORM_SCHEMA, ClimateEntity
-from homeassistant.components.climate.const import (
-    HVAC_MODE_HEAT,
-    HVAC_MODE_OFF,
-    SUPPORT_TARGET_TEMPERATURE,
-)
+from homeassistant.components.climate import HVACMode
+from homeassistant.components.climate import ClimateEntityFeature
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_PASSWORD,
     PRECISION_WHOLE,
-    TEMP_CELSIUS,
 )
+from homeassistant.const import UnitOfTemperature
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -61,7 +58,7 @@ class AdaxDevice(ClimateEntity):
     @property
     def supported_features(self):
         """Return the list of supported features."""
-        return SUPPORT_TARGET_TEMPERATURE
+        return ClimateEntityFeature.TARGET_TEMPERATURE
 
     @property
     def unique_id(self):
@@ -77,31 +74,31 @@ class AdaxDevice(ClimateEntity):
     def hvac_mode(self):
         """Return hvac operation ie. heat, cool mode."""
         if self._heater_data["heatingEnabled"]:
-            return HVAC_MODE_HEAT
-        return HVAC_MODE_OFF
+            return HVACMode.HEAT
+        return HVACMode.OFF
 
     @property
     def icon(self):
         """Return nice icon for heater."""
-        if self.hvac_mode == HVAC_MODE_HEAT:
+        if self.hvac_mode == HVACMode.HEAT:
             return "mdi:radiator"
         return "mdi:radiator-off"
 
     @property
     def hvac_modes(self):
         """Return the list of available hvac operation modes."""
-        return [HVAC_MODE_HEAT, HVAC_MODE_OFF]
+        return [HVACMode.HEAT, HVACMode.OFF]
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Set hvac mode."""
-        if hvac_mode == HVAC_MODE_HEAT:
+        if hvac_mode == HVACMode.HEAT:
             temperature = max(
                 self.min_temp, self._heater_data.get("targetTemperature", self.min_temp)
             )
             await self._adax_data_handler.set_room_target_temperature(
                 self._heater_data["id"], temperature, True
             )
-        elif hvac_mode == HVAC_MODE_OFF:
+        elif hvac_mode == HVACMode.OFF:
             await self._adax_data_handler.set_room_target_temperature(
                 self._heater_data["id"], self.min_temp, False
             )
@@ -112,7 +109,7 @@ class AdaxDevice(ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement which this device uses."""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def min_temp(self):
